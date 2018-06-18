@@ -1,0 +1,98 @@
+#include <gl/glut.h>
+#include <stdio.h>
+
+int x1, y1, x2, y2,x3,y3,x4,y4;
+double fx,fy,dfx,dfy,ddfx,ddfy,dddfx,dddfy;
+double ax,ay,bx,by,cx,cy,dx,dy;
+
+
+void myInit(void)
+{
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	gluOrtho2D(0.0, 500.0, 0.0, 500.0);
+}
+
+void draw_pixel(int x, int y) {
+	glBegin(GL_POINTS);
+	glVertex2i(x, y);
+	glEnd();
+}
+
+void drawP()
+{
+	glPointSize(1.0);
+	glColor3f(1,1,1);
+	glBegin(GL_LINES);
+	glVertex2i(x1,y1);
+	glVertex2i(x2,y2);	
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex2i(x2,y2);	
+	glVertex2i(x3,y3);
+	glEnd();
+
+	glBegin(GL_LINES);
+	glVertex2i(x3,y3);
+	glVertex2i(x4,y4);	
+	glEnd();
+}
+void draw_curve() {	
+	drawP();
+	double t,x,y;
+	//draw_pixel(x1, y1);
+	//draw_pixel(x4, y4);
+	double dt = 0.01;
+	
+	ax = -x1 + 3*x2 + -3*x3 + x4;
+	ay = -y1 + 3*y2 + -3*y3 + y4;
+	bx = 3*x1 - 6*x2 + 3*x3;
+	by = 3*y1 - 6*y2 + 3*y3;
+	cx = 3*x2 - 3*x1;
+	cy = 3*y2 - 3*y1;
+	dx = x1;
+	dy = y1;
+
+	fx = x1;
+	fy = y1;
+	dfx = cx*dt + bx*dt*dt + ax*dt*dt*dt;
+	dfy = cy*dt + by*dt*dt + ay*dt*dt*dt;
+
+	ddfx = 2*bx*dt*dt + 6*ax*dt*dt*dt;
+	ddfy = 2*by*dt*dt + 6*ay*dt*dt*dt;
+
+	dddfx = 6*ax*dt*dt*dt;
+	dddfy = 6*ay*dt*dt*dt;
+
+	for(t=0; t<=1; t=t+dt)
+	{
+		draw_pixel(fx,fy);
+		fx = fx + dfx;
+		fy = fy + dfy;
+		dfx = dfx + ddfx;
+		dfy = dfy + ddfy;
+		ddfx = ddfx + dddfx;
+		ddfy = ddfy + dddfy;
+	}
+	
+}
+
+void myDisplay() {
+	draw_curve();
+	glFlush();
+}
+
+void main(int argc, char **argv) {
+
+	printf("Enter (x1, y1, x2, y2,x3,y3,x4,y4)\n");
+	scanf("%d %d %d %d %d %d %d %d", &x1, &y1, &x2, &y2,&x3,&y3,&x4,&y4);
+
+	glutInit(&argc, argv);
+	glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB);
+	glutInitWindowSize(500, 500);
+	glutInitWindowPosition(0, 0);
+	glutCreateWindow("Cubic Bezier Curve using Taylor Series");
+	myInit();
+	glutDisplayFunc(myDisplay);
+	glutMainLoop();
+}
